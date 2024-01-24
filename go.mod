@@ -1,3 +1,3 @@
-module github.com/Rbd3178/red-black-tree
+module github.com/Rbd3178/redBlackTree
 
 go 1.21.6
