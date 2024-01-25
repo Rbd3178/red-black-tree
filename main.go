@@ -8,5 +8,6 @@ import (
 func main() {
 	fmt.Println("Test")
 	myTree := tree.New()
-	myTree.Search(2)
+	v, found := myTree.Search(2)
+	fmt.Println(v, found)
 }

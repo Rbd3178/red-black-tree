@@ -27,8 +27,19 @@ func New() *tree {
 }
 
 func (t *tree) Search(key keyType) (valType, bool) {
-	var v valType
-	return v, false
+	ptr := t.root
+	for ptr != nil {
+		switch {
+		case ptr.key == key:
+			return ptr.val, true
+		case ptr.key < key:
+			ptr = ptr.r
+		case ptr.key > key:
+			ptr = ptr.l
+		}
+	}
+	var val valType
+	return val, false
 }
 
 func (t *tree) Insert(key keyType, val valType) {
