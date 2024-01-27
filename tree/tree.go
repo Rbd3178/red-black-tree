@@ -4,12 +4,12 @@ type keyType int
 type valType string
 
 type node struct {
-	key keyType
-	val valType
-	red bool
-	l   *node
-	r   *node
-	p   *node
+	key   keyType
+	val   valType
+	black bool
+	l     *node
+	r     *node
+	p     *node
 }
 
 // TODO: use interfaces in node for multiple possible key and val types
@@ -26,26 +26,41 @@ func New() *tree {
 	return &tree{}
 }
 
-func (t *tree) Search(key keyType) (valType, bool) {
+func (t *tree) search(key keyType) *node {
 	ptr := t.root
 	for ptr != nil {
 		switch {
 		case ptr.key == key:
-			return ptr.val, true
+			return ptr
 		case ptr.key < key:
 			ptr = ptr.r
 		case ptr.key > key:
 			ptr = ptr.l
 		}
 	}
-	var val valType
-	return val, false
+	return ptr
 }
 
-func (t *tree) Insert(key keyType, val valType) {
-	// Decide if duplicates are allowed, if no search first
+func (t *tree) Search(key keyType) (valType, bool) {
+	n := t.search(key)
+	var v valType
+	if n == nil {
+		return v, false
+	}
+	return n.val, true
+}
+
+func (t *tree) insert(key keyType, val valType) bool {
+	if t.root == nil {
+		n := newNode(key, val)
+		n.black = true
+		t.root = n
+		return true
+	}
+    ptr := t.root
+	for (ptr.key )
 	n := newNode(key, val)
-	n.red = true
+
 }
 
 func (t *tree) Delete(key keyType) {
