@@ -12,7 +12,7 @@ type node struct {
 	p     *node
 }
 
-// TODO: use interfaces in node for multiple possible key and val types
+// TODO: use interfaces for multiple possible key and val types
 
 func newNode(key keyType, val valType) *node {
 	return &node{key: key, val: val}
@@ -26,51 +26,96 @@ func New() *tree {
 	return &tree{}
 }
 
-func (t *tree) search(key keyType) *node {
-	ptr := t.root
-	for ptr != nil {
+func (t *tree) Search(key keyType) (valType, bool) {
+	n := t.root
+	for n != nil {
 		switch {
-		case ptr.key == key:
-			return ptr
-		case ptr.key < key:
-			ptr = ptr.r
-		case ptr.key > key:
-			ptr = ptr.l
+		case n.key == key:
+			return n.val, true
+		case n.key < key:
+			n = n.r
+		case n.key > key:
+			n = n.l
 		}
 	}
-	return ptr
-}
-
-func (t *tree) Search(key keyType) (valType, bool) {
-	n := t.search(key)
 	var v valType
-	if n == nil {
-		return v, false
-	}
-	return n.val, true
+	return v, false
 }
 
-func (t *tree) insert(key keyType, val valType) bool {
+func (t *tree) leftRotate(n *node) {
+	child := n.r
+
+	n.r = child.l
+	if child.l != nil {
+		child.l.p = n
+	}
+
+	child.p = n.p
+	switch {
+	case n == t.root:
+		t.root = child
+	case n == n.p.l:
+		n.p.l = child
+	case n == n.p.r:
+		n.p.r = child
+	}
+
+	child.l = n
+	n.p = child
+}
+
+func (t *tree) rightRotate(n *node) {
+	child := n.l
+
+	n.l = child.r
+	if child.r != nil {
+		child.r.p = n
+	}
+
+	child.p = n.p
+	switch {
+	case n == t.root:
+		t.root = child
+	case n == n.p.l:
+		n.p.l = child
+	case n == n.p.r:
+		n.p.r = child
+	}
+
+	child.r = n
+	n.p = child
+}
+
+func (t *tree) Insert(key keyType, val valType) bool {
+	n := newNode(key, val)
 	if t.root == nil {
-		n := newNode(key, val)
 		n.black = true
 		t.root = n
 		return true
 	}
-    ptr := t.root
-	for (ptr.key )
-	n := newNode(key, val)
 
-}
+	parent := t.root
+	for parent.key > key && parent.l == nil || parent.key < key && parent.r == nil {
+		switch {
+		case parent.key == key:
+			return false
+		case parent.key < key:
+			parent = parent.r
+		case parent.key > key:
+			parent = parent.l
+		}
+	}
 
-func (t *tree) Delete(key keyType) {
+	if parent.key > key {
+		parent.l = n
+	} else {
+		parent.r = n
+	}
+	n.p = parent
 
-}
+	if !parent.black {
+		
+	}
 
-func (t *tree) Prev(key keyType) {
-
-}
-
-func (t *tree) Next(key keyType) {
-
+	return true
 }
