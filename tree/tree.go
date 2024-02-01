@@ -12,8 +12,6 @@ type node struct {
 	p     *node
 }
 
-// TODO: use interfaces for multiple possible key and val types
-
 func newNode(key keyType, val valType) *node {
 	return &node{key: key, val: val}
 }
@@ -86,6 +84,51 @@ func (t *tree) rightRotate(n *node) {
 	n.p = child
 }
 
+func (t *tree) insertFix(n *node) {
+	for n != t.root && !n.p.black {
+		parent := n.p
+		grand := n.p.p
+		switch {
+		case parent == grand.l && n == parent.r && (grand.r == nil || grand.r.black):
+			t.leftRotate(parent)
+			t.rightRotate(grand)
+			grand.black = false
+			n.black = true
+			return
+		case parent == grand.r && n == parent.l && (grand.l == nil || grand.l.black):
+			t.rightRotate(parent)
+			t.leftRotate(grand)
+			grand.black = false
+			n.black = true
+			return
+		case parent == grand.l && n == parent.l && (grand.r == nil || grand.r.black):
+			t.rightRotate(grand)
+			grand.black = false
+			n.black = true
+			return
+		case parent == grand.r && n == parent.r && (grand.l == nil || grand.l.black):
+			t.leftRotate(grand)
+			grand.black = false
+			n.black = true
+			return
+		case parent == grand.l && !grand.r.black:
+			parent.black = true
+			grand.r.black = true
+			grand.black = false
+			n = grand
+		case parent == grand.r && !grand.l.black:
+			parent.black = true
+			grand.l.black = true
+			grand.black = false
+			n = grand
+		}
+	}
+
+	if n == t.root {
+		n.black = true
+	}
+}
+
 func (t *tree) Insert(key keyType, val valType) bool {
 	n := newNode(key, val)
 	if t.root == nil {
@@ -95,7 +138,7 @@ func (t *tree) Insert(key keyType, val valType) bool {
 	}
 
 	parent := t.root
-	for parent.key > key && parent.l == nil || parent.key < key && parent.r == nil {
+	for parent.key > key && parent.l != nil || parent.key < key && parent.r != nil {
 		switch {
 		case parent.key == key:
 			return false
@@ -113,9 +156,7 @@ func (t *tree) Insert(key keyType, val valType) bool {
 	}
 	n.p = parent
 
-	if !parent.black {
-		
-	}
+	t.insertFix(n)
 
 	return true
 }
