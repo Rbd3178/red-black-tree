@@ -1,10 +1,11 @@
 package tree
 
-type keyType int
+import "fmt"
+
 type valType string
 
 type node struct {
-	key   keyType
+	key   int
 	val   valType
 	black bool
 	l     *node
@@ -12,7 +13,7 @@ type node struct {
 	p     *node
 }
 
-func newNode(key keyType, val valType) *node {
+func newNode(key int, val valType) *node {
 	return &node{key: key, val: val}
 }
 
@@ -24,7 +25,7 @@ func New() *tree {
 	return &tree{}
 }
 
-func (t *tree) Search(key keyType) (valType, bool) {
+func (t *tree) GetVal(key int) (valType, bool) {
 	n := t.root
 	for n != nil {
 		switch {
@@ -38,6 +39,54 @@ func (t *tree) Search(key keyType) (valType, bool) {
 	}
 	var v valType
 	return v, false
+}
+
+func (t *tree) ChangeVal(key int, newVal valType) bool {
+	n := t.root
+	for n != nil {
+		switch {
+		case n.key == key:
+			n.val = newVal
+			return true
+		case n.key < key:
+			n = n.r
+		case n.key > key:
+			n = n.l
+		}
+	}
+	return false
+}
+
+func visualizeInternal(n *node, depth int) {
+	if n.r != nil {
+		visualizeInternal(n.r, depth+1)
+	} else {
+		for i := 0; i < depth + 1; i++ {
+			fmt.Print("          ")
+		}
+		fmt.Print("nil(B)\n")
+	}
+	for i := 0; i < depth; i++ {
+		fmt.Print("          ")
+	}
+	fmt.Print(n.key)
+	if n.black {
+		fmt.Print("(B)\n")
+	} else {
+		fmt.Print("(R)\n")
+	}
+	if n.l != nil {
+		visualizeInternal(n.l, depth+1)
+	} else {
+		for i := 0; i < depth + 1; i++ {
+			fmt.Print("          ")
+		}
+		fmt.Print("nil(B)\n")
+	}
+}
+
+func (t *tree) Visualize() {
+	visualizeInternal(t.root, 0)
 }
 
 func (t *tree) leftRotate(n *node) {
@@ -104,12 +153,12 @@ func (t *tree) insertFix(n *node) {
 		case parent == grand.l && n == parent.l && (grand.r == nil || grand.r.black):
 			t.rightRotate(grand)
 			grand.black = false
-			n.black = true
+			parent.black = true
 			return
 		case parent == grand.r && n == parent.r && (grand.l == nil || grand.l.black):
 			t.leftRotate(grand)
 			grand.black = false
-			n.black = true
+			parent.black = true
 			return
 		case parent == grand.l && !grand.r.black:
 			parent.black = true
@@ -129,7 +178,7 @@ func (t *tree) insertFix(n *node) {
 	}
 }
 
-func (t *tree) Insert(key keyType, val valType) bool {
+func (t *tree) Insert(key int, val valType) bool {
 	n := newNode(key, val)
 	if t.root == nil {
 		n.black = true
