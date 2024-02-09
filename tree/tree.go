@@ -2,18 +2,16 @@ package tree
 
 import "fmt"
 
-type valType string
-
 type node struct {
 	key   int
-	val   valType
+	val   string
 	black bool
 	l     *node
 	r     *node
 	p     *node
 }
 
-func newNode(key int, val valType) *node {
+func newNode(key int, val string) *node {
 	return &node{key: key, val: val}
 }
 
@@ -25,7 +23,7 @@ func New() *tree {
 	return &tree{}
 }
 
-func (t *tree) GetVal(key int) (valType, bool) {
+func (t *tree) GetVal(key int) (string, bool) {
 	n := t.root
 	for n != nil {
 		switch {
@@ -37,11 +35,11 @@ func (t *tree) GetVal(key int) (valType, bool) {
 			n = n.l
 		}
 	}
-	var v valType
+	var v string
 	return v, false
 }
 
-func (t *tree) ChangeVal(key int, newVal valType) bool {
+func (t *tree) ChangeVal(key int, newVal string) bool {
 	n := t.root
 	for n != nil {
 		switch {
@@ -58,28 +56,29 @@ func (t *tree) ChangeVal(key int, newVal valType) bool {
 }
 
 func visualizeInternal(n *node, depth int) {
-	if n.r != nil {
+	if n != nil {
 		visualizeInternal(n.r, depth+1)
-	} else {
-		for i := 0; i < depth + 1; i++ {
-			fmt.Print("          ")
+		for i := 0; i < depth; i++ {
+			if i == depth-1 {
+				fmt.Print("   |----")
+			} else {
+				fmt.Print("        ")
+			}
 		}
-		fmt.Print("nil(B)\n")
-	}
-	for i := 0; i < depth; i++ {
-		fmt.Print("          ")
-	}
-	fmt.Print(n.key)
-	if n.black {
-		fmt.Print("(B)\n")
-	} else {
-		fmt.Print("(R)\n")
-	}
-	if n.l != nil {
+		fmt.Print(n.key)
+		if n.black {
+			fmt.Print("(B)\n")
+		} else {
+			fmt.Print("(R)\n")
+		}
 		visualizeInternal(n.l, depth+1)
 	} else {
-		for i := 0; i < depth + 1; i++ {
-			fmt.Print("          ")
+		for i := 0; i < depth; i++ {
+			if i == depth-1 {
+				fmt.Print("   |----")
+			} else {
+				fmt.Print("         ")
+			}
 		}
 		fmt.Print("nil(B)\n")
 	}
@@ -178,7 +177,7 @@ func (t *tree) insertFix(n *node) {
 	}
 }
 
-func (t *tree) Insert(key int, val valType) bool {
+func (t *tree) Insert(key int, val string) bool {
 	n := newNode(key, val)
 	if t.root == nil {
 		n.black = true
@@ -188,14 +187,14 @@ func (t *tree) Insert(key int, val valType) bool {
 
 	parent := t.root
 	for parent.key > key && parent.l != nil || parent.key < key && parent.r != nil {
-		switch {
-		case parent.key == key:
-			return false
-		case parent.key < key:
+		if parent.key < key {
 			parent = parent.r
-		case parent.key > key:
+		} else {
 			parent = parent.l
 		}
+	}
+	if parent.key == key {
+		return false
 	}
 
 	if parent.key > key {
