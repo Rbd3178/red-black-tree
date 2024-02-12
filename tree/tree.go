@@ -1,6 +1,9 @@
 package tree
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type node struct {
 	key   int
@@ -23,36 +26,84 @@ func New() *tree {
 	return &tree{}
 }
 
-func (t *tree) GetVal(key int) (string, bool) {
+func (t *tree) getNode(key int) *node {
 	n := t.root
-	for n != nil {
-		switch {
-		case n.key == key:
-			return n.val, true
-		case n.key < key:
+	for n != nil && n.key != key {
+		if n.key < key {
 			n = n.r
-		case n.key > key:
+		} else {
 			n = n.l
 		}
 	}
-	var v string
-	return v, false
+	return n
 }
 
-func (t *tree) ChangeVal(key int, newVal string) bool {
-	n := t.root
-	for n != nil {
-		switch {
-		case n.key == key:
-			n.val = newVal
-			return true
-		case n.key < key:
-			n = n.r
-		case n.key > key:
-			n = n.l
-		}
+func nextNode(n *node) *node {
+	n = n.r
+	for n != nil && n.l != nil {
+		n = n.l
 	}
-	return false
+	return n
+}
+
+func prevNode(n *node) *node {
+	n = n.l
+	for n != nil && n.r != nil {
+		n = n.r
+	}
+	return n
+}
+
+func (t *tree) Get(key int) (string, error) {
+	n := t.getNode(key)
+	if n == nil {
+		var v string
+		return v, errors.New("key doesn't exist")
+	}
+	return n.val, nil
+}
+
+func (t *tree) Change(key int, val string) error {
+	n := t.getNode(key)
+	if n == nil {
+		return errors.New("key doesn't exist")
+	}
+	n.val = val
+	return nil
+}
+
+func (t *tree) Next(key int) (int, string, error) {
+	n := t.getNode(key)
+	if n == nil {
+		var k int
+		var v string
+		return k, v, errors.New("key doesn't exist")
+	}
+	n = nextNode(n)
+	if n == nil {
+		var k int
+		var v string
+		return k, v, errors.New("larger key doesn't exist")
+	}
+	return n.key, n.val, nil
+
+}
+
+func (t *tree) Prev(key int) (int, string, error) {
+	n := t.getNode(key)
+	if n == nil {
+		var k int
+		var v string
+		return k, v, errors.New("key doesn't exist")
+	}
+	n = prevNode(n)
+	if n == nil {
+		var k int
+		var v string
+		return k, v, errors.New("smaller key doesn't exist")
+	}
+	return n.key, n.val, nil
+
 }
 
 func visualizeInternal(n *node, depth int) {
@@ -72,15 +123,6 @@ func visualizeInternal(n *node, depth int) {
 			fmt.Print("(R)\n")
 		}
 		visualizeInternal(n.l, depth+1)
-	} else {
-		for i := 0; i < depth; i++ {
-			if i == depth-1 {
-				fmt.Print("   |----")
-			} else {
-				fmt.Print("         ")
-			}
-		}
-		fmt.Print("nil(B)\n")
 	}
 }
 
@@ -177,12 +219,13 @@ func (t *tree) insertFix(n *node) {
 	}
 }
 
-func (t *tree) Insert(key int, val string) bool {
+func (t *tree) Insert(key int, val string) error {
 	n := newNode(key, val)
+
 	if t.root == nil {
 		n.black = true
 		t.root = n
-		return true
+		return nil
 	}
 
 	parent := t.root
@@ -194,7 +237,7 @@ func (t *tree) Insert(key int, val string) bool {
 		}
 	}
 	if parent.key == key {
-		return false
+		return errors.New("key already exists")
 	}
 
 	if parent.key > key {
@@ -206,5 +249,50 @@ func (t *tree) Insert(key int, val string) bool {
 
 	t.insertFix(n)
 
-	return true
+	return nil
+}
+
+func (t *tree) Delete(key int) error {
+	n := t.root
+
+	for n != nil && (n.key > key && n.l != nil || n.key < key && n.r != nil) {
+		if n.key < key {
+			n = n.r
+		} else {
+			n = n.l
+		}
+	}
+	if n == nil {
+		return errors.New("key doesn't exist")
+	}
+
+	if n == n.p.l {
+		switch {
+		case n.l != nil && n.r != nil:
+			// something
+		case n.l != nil:
+			n.l.p = n.p
+			n.p.l = n.l
+		case n.r != nil:
+			n.r.p = n.p
+			n.p.l = n.r
+		default:
+			n.p.l = nil
+		}
+	} else {
+		switch {
+		case n.l != nil && n.r != nil:
+			// something
+		case n.l != nil:
+			n.l.p = n.p
+			n.p.r = n.l
+		case n.r != nil:
+			n.r.p = n.p
+			n.p.r = n.r
+		default:
+			n.p.r = nil
+		}
+	}
+
+	return nil
 }

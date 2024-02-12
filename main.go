@@ -18,11 +18,11 @@ func main() {
 		if k == -1 {
 			break
 		}
-		success := myTree.Insert(k, "test")
-		if success {
-			myTree.Visualize()
+		err = myTree.Insert(k, "test")
+		if err != nil {
+			fmt.Println("Error during insertion:", err)
 		} else {
-			fmt.Println("Key already exists")
+			myTree.Visualize()
 		}
 		
 		fmt.Print("\n\n\n\n")
