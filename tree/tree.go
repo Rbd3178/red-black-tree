@@ -38,23 +38,7 @@ func (t *tree) getNode(key int) *node {
 	return n
 }
 
-func nextNode(n *node) *node {
-	n = n.r
-	for n != nil && n.l != nil {
-		n = n.l
-	}
-	return n
-}
-
-func prevNode(n *node) *node {
-	n = n.l
-	for n != nil && n.r != nil {
-		n = n.r
-	}
-	return n
-}
-
-func (t *tree) Get(key int) (string, error) {
+func (t *tree) At(key int) (string, error) {
 	n := t.getNode(key)
 	if n == nil {
 		var v string
@@ -63,7 +47,7 @@ func (t *tree) Get(key int) (string, error) {
 	return n.val, nil
 }
 
-func (t *tree) Change(key int, val string) error {
+func (t *tree) Assign(key int, val string) error {
 	n := t.getNode(key)
 	if n == nil {
 		return errors.New("key doesn't exist")
@@ -72,38 +56,76 @@ func (t *tree) Change(key int, val string) error {
 	return nil
 }
 
+/*func nextNode(n *node) *node {
+	if n.r != nil {
+		n = n.r
+		for n.l != nil {
+			n = n.l
+		}
+		return n
+	}
+	for n.p != nil && n == n.p.r {
+		n = n.p
+	}
+	return n.p
+}
+
+func prevNode(n *node) *node {
+	if n.l != nil {
+		n = n.l
+		for n.r != nil {
+			n = n.r
+		}
+		return n
+	}
+	for n.p != nil && n == n.p.l {
+		n = n.p
+	}
+	return n.p
+}*/
+
 func (t *tree) Next(key int) (int, string, error) {
-	n := t.getNode(key)
+	n := t.root
 	if n == nil {
 		var k int
 		var v string
-		return k, v, errors.New("key doesn't exist")
+		return k, v, errors.New("larger key doesn't exist (tree is empty)")
 	}
-	n = nextNode(n)
-	if n == nil {
+	for (n.key <= key && n.r != nil) || (n.key > key && n.l != nil) {
+		if n.key <= key && n.r != nil {
+			n = n.r
+		} else {
+			n = n.l
+		}
+	}
+	if n.key <= key {
 		var k int
 		var v string
 		return k, v, errors.New("larger key doesn't exist")
 	}
 	return n.key, n.val, nil
-
 }
 
 func (t *tree) Prev(key int) (int, string, error) {
-	n := t.getNode(key)
+	n := t.root
 	if n == nil {
 		var k int
 		var v string
-		return k, v, errors.New("key doesn't exist")
+		return k, v, errors.New("smaller key doesn't exist (tree is empty)")
 	}
-	n = prevNode(n)
-	if n == nil {
+	for (n.key >= key && n.l != nil) || (n.key < key && n.r != nil) {
+		if n.key >= key && n.l != nil {
+			n = n.l
+		} else {
+			n = n.r
+		}
+	}
+	if n.key >= key {
 		var k int
 		var v string
 		return k, v, errors.New("smaller key doesn't exist")
 	}
 	return n.key, n.val, nil
-
 }
 
 func visualizeInternal(n *node, depth int) {
