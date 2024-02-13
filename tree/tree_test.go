@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -109,11 +110,11 @@ func (tr *tree) fill() {
 	// min: 188
 }
 func TestTreeAt(t *testing.T) {
-	tr := New()
+	tr := New(reflect.TypeOf(""))
 	tr.fill()
 	var tests = []struct {
 		name    string
-		key   int
+		key     int
 		want    string
 		wantErr bool
 	}{
@@ -127,15 +128,47 @@ func TestTreeAt(t *testing.T) {
 		{"2800 (haven't been inserted) should not be found", 2800, "", true},
 	}
 	for _, tt := range tests {
-            t.Run(tt.name, func(t *testing.T) {
-                got, err := tr.At(tt.key)
-                if (err != nil) != tt.wantErr {
-					t.Errorf("tree.At() error = %v, wantErr %v", err, tt.wantErr)
-					return
-				}
-				if got != tt.want {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tr.At(tt.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("tree.At() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
 				t.Errorf("tree.At() = %v, want %v", got, tt.want)
 			}
-            })
-        }
+		})
+	}
+}
+
+func TestTreeNext(t *testing.T) {
+	tr := New(reflect.TypeOf(""))
+	tr.fill()
+	var tests = []struct {
+		name    string
+		key     int
+		want    string
+		wantErr bool
+	}{
+		{"3975 should be found", 3975, "3975", false},
+		{"6811 should be found", 6811, "6811", false},
+		{"342 should be found", 342, "342", false},
+		{"9950 (max) should be found", 9950, "9950", false},
+		{"188 (min) should be found", 188, "188", false},
+		{"9999 (larger than max) should not be found", 9999, "", true},
+		{"100 (smaller than min) should not be found", 100, "", true},
+		{"2800 (haven't been inserted) should not be found", 2800, "", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tr.At(tt.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("tree.At() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("tree.At() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

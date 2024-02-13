@@ -3,27 +3,31 @@ package tree
 import (
 	"errors"
 	"fmt"
+	"reflect"
 )
 
 type node struct {
 	key   int
-	val   string
+	val   any
 	black bool
 	l     *node
 	r     *node
 	p     *node
 }
 
-func newNode(key int, val string) *node {
+func newNode(key int, val any) *node {
 	return &node{key: key, val: val}
 }
 
 type tree struct {
-	root *node
+	valType reflect.Type
+	root    *node
+	size    int
 }
 
-func New() *tree {
-	return &tree{}
+func New(vType reflect.Type) *tree {
+	t := tree{valType: vType}
+	return &t
 }
 
 func (t *tree) getNode(key int) *node {
@@ -38,7 +42,7 @@ func (t *tree) getNode(key int) *node {
 	return n
 }
 
-func (t *tree) At(key int) (string, error) {
+func (t *tree) At(key int) (any, error) {
 	n := t.getNode(key)
 	if n == nil {
 		var v string
@@ -47,13 +51,35 @@ func (t *tree) At(key int) (string, error) {
 	return n.val, nil
 }
 
-func (t *tree) Assign(key int, val string) error {
+func (t *tree) Assign(key int, val any) error {
+	if reflect.TypeOf(val) != t.valType {
+		return errors.New("wrong value type")
+	}
+	
 	n := t.getNode(key)
 	if n == nil {
 		return errors.New("key doesn't exist")
 	}
 	n.val = val
 	return nil
+}
+
+func (t *tree) InOrder() [][]any {
+	var out [][]any
+	var s []*node
+	n := t.root
+	for n != nil || len(s) != 0 {
+		if n == nil && len(s) != 0 {
+			var pair = []any{s[len(s)-1].key, s[len(s)-1].val}
+			out = append(out, pair)
+			n = s[len(s)-1].r
+			s = s[:len(s)-1]
+		} else {
+			s = append(s, n)
+			n = n.l
+		}
+	}
+	return out
 }
 
 /*func nextNode(n *node) *node {
@@ -84,7 +110,7 @@ func prevNode(n *node) *node {
 	return n.p
 }*/
 
-func (t *tree) Next(key int) (int, string, error) {
+func (t *tree) Next(key int) (int, any, error) {
 	n := t.root
 	if n == nil {
 		var k int
@@ -106,7 +132,7 @@ func (t *tree) Next(key int) (int, string, error) {
 	return n.key, n.val, nil
 }
 
-func (t *tree) Prev(key int) (int, string, error) {
+func (t *tree) Prev(key int) (int, any, error) {
 	n := t.root
 	if n == nil {
 		var k int
@@ -241,12 +267,17 @@ func (t *tree) insertFix(n *node) {
 	}
 }
 
-func (t *tree) Insert(key int, val string) error {
+func (t *tree) Insert(key int, val any) error {
+	if reflect.TypeOf(val) != t.valType {
+		return errors.New("wrong value type")
+	}
+
 	n := newNode(key, val)
 
 	if t.root == nil {
 		n.black = true
 		t.root = n
+		t.size++
 		return nil
 	}
 
@@ -271,6 +302,7 @@ func (t *tree) Insert(key int, val string) error {
 
 	t.insertFix(n)
 
+	t.size++
 	return nil
 }
 
