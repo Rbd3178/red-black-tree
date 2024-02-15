@@ -3,34 +3,36 @@ package tree
 import (
 	"errors"
 	"fmt"
+	"golang.org/x/exp/constraints"
 	"reflect"
 )
 
-type node struct {
-	key   int
-	val   any
+type node[keyType constraints.Ordered, valType any] struct {
+	key   keyType
+	val   valType
 	black bool
-	l     *node
-	r     *node
-	p     *node
+	l     *node[keyType, valType]
+	r     *node[keyType, valType]
+	p     *node[keyType, valType]
 }
 
-func newNode(key int, val any) *node {
-	return &node{key: key, val: val}
+func newNode[keyType constraints.Ordered, valType any](key keyType, val valType) *node[keyType, valType] {
+	return &node[keyType, valType]{key: key, val: val}
 }
 
-type tree struct {
-	valType reflect.Type
-	root    *node
+type Tree[keyType constraints.Ordered, valType any] struct {
+	keyType keyType
+	valType valType
+	root    *node[keyType, valType]
 	size    int
 }
 
-func New(vType reflect.Type) *tree {
-	t := tree{valType: vType}
+func New[keyType constraints.Ordered, valType any]() *Tree[keyType, valType] {
+	var t Tree[keyType, valType]
 	return &t
 }
 
-func (t *tree) getNode(key int) *node {
+func (t *Tree[keyType, valType]) getNode(key keyType) *node[keyType, valType] {
 	n := t.root
 	for n != nil && n.key != key {
 		if n.key < key {
@@ -42,7 +44,7 @@ func (t *tree) getNode(key int) *node {
 	return n
 }
 
-func (t *tree) At(key int) (any, error) {
+func (t *Tree) At(key int) (any, error) {
 	n := t.getNode(key)
 	if n == nil {
 		var v string
@@ -51,11 +53,11 @@ func (t *tree) At(key int) (any, error) {
 	return n.val, nil
 }
 
-func (t *tree) Assign(key int, val any) error {
+func (t *Tree) Assign(key int, val any) error {
 	if reflect.TypeOf(val) != t.valType {
 		return errors.New("wrong value type")
 	}
-	
+
 	n := t.getNode(key)
 	if n == nil {
 		return errors.New("key doesn't exist")
@@ -64,7 +66,7 @@ func (t *tree) Assign(key int, val any) error {
 	return nil
 }
 
-func (t *tree) InOrder() [][]any {
+func (t *Tree) InOrder() [][]any {
 	var out [][]any
 	var s []*node
 	n := t.root
@@ -82,35 +84,11 @@ func (t *tree) InOrder() [][]any {
 	return out
 }
 
-/*func nextNode(n *node) *node {
-	if n.r != nil {
-		n = n.r
-		for n.l != nil {
-			n = n.l
-		}
-		return n
-	}
-	for n.p != nil && n == n.p.r {
-		n = n.p
-	}
-	return n.p
+func (t *Tree) Size() int {
+	return t.size
 }
 
-func prevNode(n *node) *node {
-	if n.l != nil {
-		n = n.l
-		for n.r != nil {
-			n = n.r
-		}
-		return n
-	}
-	for n.p != nil && n == n.p.l {
-		n = n.p
-	}
-	return n.p
-}*/
-
-func (t *tree) Next(key int) (int, any, error) {
+func (t *Tree) Next(key int) (int, any, error) {
 	n := t.root
 	if n == nil {
 		var k int
@@ -132,7 +110,7 @@ func (t *tree) Next(key int) (int, any, error) {
 	return n.key, n.val, nil
 }
 
-func (t *tree) Prev(key int) (int, any, error) {
+func (t *Tree) Prev(key int) (int, any, error) {
 	n := t.root
 	if n == nil {
 		var k int
@@ -174,11 +152,11 @@ func visualizeInternal(n *node, depth int) {
 	}
 }
 
-func (t *tree) Visualize() {
+func (t *Tree) Visualize() {
 	visualizeInternal(t.root, 0)
 }
 
-func (t *tree) leftRotate(n *node) {
+func (t *Tree) leftRotate(n *node) {
 	child := n.r
 
 	n.r = child.l
@@ -200,7 +178,7 @@ func (t *tree) leftRotate(n *node) {
 	n.p = child
 }
 
-func (t *tree) rightRotate(n *node) {
+func (t *Tree) rightRotate(n *node) {
 	child := n.l
 
 	n.l = child.r
@@ -222,7 +200,7 @@ func (t *tree) rightRotate(n *node) {
 	n.p = child
 }
 
-func (t *tree) insertFix(n *node) {
+func (t *Tree) insertFix(n *node) {
 	for n != t.root && !n.p.black {
 		parent := n.p
 		grand := n.p.p
@@ -267,10 +245,10 @@ func (t *tree) insertFix(n *node) {
 	}
 }
 
-func (t *tree) Insert(key int, val any) error {
-	if reflect.TypeOf(val) != t.valType {
+func (t *Tree[keyType, valType]) Insert(key keyType, val valType) error {
+	/*if reflect.TypeOf(val) != t.valType {
 		return errors.New("wrong value type")
-	}
+	}*/
 
 	n := newNode(key, val)
 
@@ -306,7 +284,7 @@ func (t *tree) Insert(key int, val any) error {
 	return nil
 }
 
-func (t *tree) Delete(key int) error {
+func (t *Tree) Delete(key int) error {
 	n := t.root
 
 	for n != nil && (n.key > key && n.l != nil || n.key < key && n.r != nil) {

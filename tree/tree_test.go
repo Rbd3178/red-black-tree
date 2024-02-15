@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func (tr *tree) fill() {
+func (tr *Tree) fill() {
 	tr.Insert(8215, "8215")
 	tr.Insert(9676, "9676")
 	tr.Insert(8191, "8191")
@@ -106,8 +106,6 @@ func (tr *tree) fill() {
 	tr.Insert(8823, "8823")
 	tr.Insert(5290, "5290")
 	tr.Insert(4311, "4311")
-	// max: 9950
-	// min: 188
 }
 func TestTreeAt(t *testing.T) {
 	tr := New(reflect.TypeOf(""))
