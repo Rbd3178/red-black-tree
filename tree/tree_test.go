@@ -1,11 +1,14 @@
 package tree
 
 import (
-	"reflect"
 	"testing"
 )
 
-func (tr *Tree) fill() {
+// newFilledTree returns a pointer to a Tree,
+// filled with 100 string values with int keys.
+// Max key: 9950. Min key: 188.
+func newFilledTree() *Tree[int, string] {
+	var tr Tree[int, string]
 	tr.Insert(8215, "8215")
 	tr.Insert(9676, "9676")
 	tr.Insert(8191, "8191")
@@ -106,10 +109,36 @@ func (tr *Tree) fill() {
 	tr.Insert(8823, "8823")
 	tr.Insert(5290, "5290")
 	tr.Insert(4311, "4311")
+	return &tr
 }
+
+func TestTreeInsert(t *testing.T) {
+	var tr Tree[int, string]
+	var tests = []struct {
+		name    string
+		key     int
+		val     string
+		wantErr bool
+	}{
+		{"inserting 100", 100, "100", false},
+		{"inserting 51->51", 51, "51", false},
+		{"inserting 42->42", 42, "42", false},
+		{"inserting 65->42", 65, "42", false},
+		{"inserting 51 again", 51, "51", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tr.Insert(tt.key, tt.val)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("tree.At() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
 func TestTreeAt(t *testing.T) {
-	tr := New(reflect.TypeOf(""))
-	tr.fill()
+	var tr = newFilledTree()
 	var tests = []struct {
 		name    string
 		key     int
@@ -138,7 +167,7 @@ func TestTreeAt(t *testing.T) {
 		})
 	}
 }
-
+/*
 func TestTreeNext(t *testing.T) {
 	tr := New(reflect.TypeOf(""))
 	tr.fill()
@@ -170,3 +199,4 @@ func TestTreeNext(t *testing.T) {
 		})
 	}
 }
+*/

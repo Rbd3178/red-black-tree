@@ -2,39 +2,23 @@ package main
 
 import (
 	"fmt"
-	"reflect"
+	//"reflect"
 	"github.com/Rbd3178/redBlackTree/tree"
 )
 
 
 func main() {
-	tr := tree.New[int, string]
-	tr.Insert(8215, "8215")
-
-	for _, pair := range tr.InOrder() {
-		for _, element := range pair {
-			// Print each element of the pair
-			fmt.Print(element, " ")
-		}
-		fmt.Println()
+	var tr tree.Tree[int, int]
+	err := tr.Insert(2, 2)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Success!")
 	}
-	/*for {
-		var k int
-		_, err := fmt.Scan(&k)
-		if err != nil {
-			fmt.Println("Error reading input:", err)
-			return
-		}
-		if k == -1 {
-			break
-		}
-		err = tr.Insert(k, "test")
-		if err != nil {
-			fmt.Println("Error during insertion:", err)
-		} else {
-			tr.Visualize()
-		}
-		
-		fmt.Print("\n\n\n\n")
-	}*/
+	err = tr.Insert(2, 2)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Success!")
+	}
 }
