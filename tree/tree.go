@@ -2,37 +2,29 @@ package tree
 
 import (
 	"errors"
-	"fmt"
+	// "fmt"
 	"golang.org/x/exp/constraints"
-	"reflect"
 )
 
-type node[keyType constraints.Ordered, valType any] struct {
-	key   keyType
-	val   valType
+type node[kT constraints.Ordered, vT any] struct {
+	key   kT
+	val   vT
 	black bool
-	l     *node[keyType, valType]
-	r     *node[keyType, valType]
-	p     *node[keyType, valType]
+	l     *node[kT, vT]
+	r     *node[kT, vT]
+	p     *node[kT, vT]
 }
 
-func newNode[keyType constraints.Ordered, valType any](key keyType, val valType) *node[keyType, valType] {
-	return &node[keyType, valType]{key: key, val: val}
+func newNode[kT constraints.Ordered, vT any](key kT, val vT) *node[kT, vT] {
+	return &node[kT, vT]{key: key, val: val}
 }
 
-type Tree[keyType constraints.Ordered, valType any] struct {
-	keyType keyType
-	valType valType
-	root    *node[keyType, valType]
+type Tree[kT constraints.Ordered, vT any] struct {
+	root    *node[kT, vT]
 	size    int
 }
 
-func New[keyType constraints.Ordered, valType any]() *Tree[keyType, valType] {
-	var t Tree[keyType, valType]
-	return &t
-}
-
-func (t *Tree[keyType, valType]) getNode(key keyType) *node[keyType, valType] {
+func (t *Tree[kT, vT]) getNode(key kT) *node[kT, vT] {
 	n := t.root
 	for n != nil && n.key != key {
 		if n.key < key {
@@ -44,15 +36,15 @@ func (t *Tree[keyType, valType]) getNode(key keyType) *node[keyType, valType] {
 	return n
 }
 
-func (t *Tree) At(key int) (any, error) {
+func (t *Tree[kT, vT]) At(key kT) (vT, error) {
 	n := t.getNode(key)
 	if n == nil {
-		var v string
+		var v vT
 		return v, errors.New("key doesn't exist")
 	}
 	return n.val, nil
 }
-
+/*
 func (t *Tree) Assign(key int, val any) error {
 	if reflect.TypeOf(val) != t.valType {
 		return errors.New("wrong value type")
@@ -131,32 +123,8 @@ func (t *Tree) Prev(key int) (int, any, error) {
 	}
 	return n.key, n.val, nil
 }
-
-func visualizeInternal(n *node, depth int) {
-	if n != nil {
-		visualizeInternal(n.r, depth+1)
-		for i := 0; i < depth; i++ {
-			if i == depth-1 {
-				fmt.Print("   |----")
-			} else {
-				fmt.Print("        ")
-			}
-		}
-		fmt.Print(n.key)
-		if n.black {
-			fmt.Print("(B)\n")
-		} else {
-			fmt.Print("(R)\n")
-		}
-		visualizeInternal(n.l, depth+1)
-	}
-}
-
-func (t *Tree) Visualize() {
-	visualizeInternal(t.root, 0)
-}
-
-func (t *Tree) leftRotate(n *node) {
+*/
+func (t *Tree[keyType, valType]) leftRotate(n *node[keyType, valType]) {
 	child := n.r
 
 	n.r = child.l
@@ -178,7 +146,7 @@ func (t *Tree) leftRotate(n *node) {
 	n.p = child
 }
 
-func (t *Tree) rightRotate(n *node) {
+func (t *Tree[keyType, valType]) rightRotate(n *node[keyType, valType]) {
 	child := n.l
 
 	n.l = child.r
@@ -200,7 +168,7 @@ func (t *Tree) rightRotate(n *node) {
 	n.p = child
 }
 
-func (t *Tree) insertFix(n *node) {
+func (t *Tree[keyType, valType]) insertFix(n *node[keyType, valType]) {
 	for n != t.root && !n.p.black {
 		parent := n.p
 		grand := n.p.p
@@ -246,10 +214,6 @@ func (t *Tree) insertFix(n *node) {
 }
 
 func (t *Tree[keyType, valType]) Insert(key keyType, val valType) error {
-	/*if reflect.TypeOf(val) != t.valType {
-		return errors.New("wrong value type")
-	}*/
-
 	n := newNode(key, val)
 
 	if t.root == nil {
@@ -283,7 +247,7 @@ func (t *Tree[keyType, valType]) Insert(key keyType, val valType) error {
 	t.size++
 	return nil
 }
-
+/*
 func (t *Tree) Delete(key int) error {
 	n := t.root
 
@@ -328,3 +292,4 @@ func (t *Tree) Delete(key int) error {
 
 	return nil
 }
+*/
