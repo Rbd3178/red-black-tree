@@ -20,8 +20,10 @@ func newNode[kT constraints.Ordered, vT any](key kT, val vT) *node[kT, vT] {
 }
 
 type Tree[kT constraints.Ordered, vT any] struct {
-	root    *node[kT, vT]
-	size    int
+	root *node[kT, vT]
+	size int
+	max *node[kT, vT]
+	min *node[kT, vT]
 }
 
 func (t *Tree[kT, vT]) getNode(key kT) *node[kT, vT] {
@@ -44,12 +46,8 @@ func (t *Tree[kT, vT]) At(key kT) (vT, error) {
 	}
 	return n.val, nil
 }
-/*
-func (t *Tree) Assign(key int, val any) error {
-	if reflect.TypeOf(val) != t.valType {
-		return errors.New("wrong value type")
-	}
 
+func (t *Tree[kT, vT]) Assign(key kT, val vT) error {
 	n := t.getNode(key)
 	if n == nil {
 		return errors.New("key doesn't exist")
@@ -58,9 +56,9 @@ func (t *Tree) Assign(key int, val any) error {
 	return nil
 }
 
-func (t *Tree) InOrder() [][]any {
+func (t *Tree[kT, vT]) InOrder() [][]any {
 	var out [][]any
-	var s []*node
+	var s []*node[kT, vT]
 	n := t.root
 	for n != nil || len(s) != 0 {
 		if n == nil && len(s) != 0 {
@@ -76,54 +74,82 @@ func (t *Tree) InOrder() [][]any {
 	return out
 }
 
-func (t *Tree) Size() int {
+func (t *Tree[kT, vT]) Size() int {
 	return t.size
 }
 
-func (t *Tree) Next(key int) (int, any, error) {
+func (t *Tree[kT, vT]) Max() (kT, vT, error) {
+	if t.root == nil {
+		var k kT
+		var v vT
+		return k, v, errors.New("tree is empty")
+	}
+	return t.max.key, t.max.val, nil
+}
+
+func (t *Tree[kT, vT]) Min() (kT, vT, error) {
+	if t.root == nil {
+		var k kT
+		var v vT
+		return k, v, errors.New("tree is empty")
+	}
+	return t.min.key, t.min.val, nil
+}
+
+func (t *Tree[kT, vT]) Next(key kT) (kT, vT, error) {
 	n := t.root
+	var curBest *node[kT, vT]
 	if n == nil {
-		var k int
-		var v string
+		var k kT
+		var v vT
 		return k, v, errors.New("larger key doesn't exist (tree is empty)")
 	}
 	for (n.key <= key && n.r != nil) || (n.key > key && n.l != nil) {
 		if n.key <= key && n.r != nil {
 			n = n.r
 		} else {
+			curBest = n
 			n = n.l
 		}
 	}
-	if n.key <= key {
-		var k int
-		var v string
+	if n.key <= key && curBest == nil {
+		var k kT
+		var v vT
 		return k, v, errors.New("larger key doesn't exist")
 	}
-	return n.key, n.val, nil
+	if n.key > key {
+		return n.key, n.val, nil
+	}
+	return curBest.key, curBest.val, nil
 }
 
-func (t *Tree) Prev(key int) (int, any, error) {
+func (t *Tree[kT, vT]) Prev(key kT) (kT, vT, error) {
 	n := t.root
+	var curBest *node[kT, vT]
 	if n == nil {
-		var k int
-		var v string
+		var k kT
+		var v vT
 		return k, v, errors.New("smaller key doesn't exist (tree is empty)")
 	}
 	for (n.key >= key && n.l != nil) || (n.key < key && n.r != nil) {
 		if n.key >= key && n.l != nil {
 			n = n.l
 		} else {
+			curBest = n
 			n = n.r
 		}
 	}
-	if n.key >= key {
-		var k int
-		var v string
+	if n.key >= key && curBest == nil {
+		var k kT
+		var v vT
 		return k, v, errors.New("smaller key doesn't exist")
 	}
-	return n.key, n.val, nil
+	if n.key < key {
+		return n.key, n.val, nil
+	}
+	return curBest.key, curBest.val, nil
 }
-*/
+
 func (t *Tree[keyType, valType]) leftRotate(n *node[keyType, valType]) {
 	child := n.r
 
@@ -220,6 +246,8 @@ func (t *Tree[keyType, valType]) Insert(key keyType, val valType) error {
 		n.black = true
 		t.root = n
 		t.size++
+		t.max = n
+		t.min = n
 		return nil
 	}
 
@@ -245,8 +273,15 @@ func (t *Tree[keyType, valType]) Insert(key keyType, val valType) error {
 	t.insertFix(n)
 
 	t.size++
+	if key > t.max.key {
+		t.max = n
+	}
+	if key < t.min.key {
+		t.min = n
+	}
 	return nil
 }
+
 /*
 func (t *Tree) Delete(key int) error {
 	n := t.root
