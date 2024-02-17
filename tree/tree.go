@@ -22,8 +22,8 @@ func newNode[kT constraints.Ordered, vT any](key kT, val vT) *node[kT, vT] {
 type Tree[kT constraints.Ordered, vT any] struct {
 	root *node[kT, vT]
 	size int
-	max *node[kT, vT]
-	min *node[kT, vT]
+	max  *node[kT, vT]
+	min  *node[kT, vT]
 }
 
 func (t *Tree[kT, vT]) getNode(key kT) *node[kT, vT] {
@@ -282,49 +282,49 @@ func (t *Tree[keyType, valType]) Insert(key keyType, val valType) error {
 	return nil
 }
 
-/*
-func (t *Tree) Delete(key int) error {
-	n := t.root
+func (t *Tree[kT, vT]) Delete(key kT) error {
+	n := t.getNode(key)
 
-	for n != nil && (n.key > key && n.l != nil || n.key < key && n.r != nil) {
-		if n.key < key {
-			n = n.r
-		} else {
-			n = n.l
-		}
-	}
 	if n == nil {
 		return errors.New("key doesn't exist")
 	}
 
+	if n.l != nil && n.r != nil {
+		next := n.r
+		for next.l != nil {
+			next = next.l
+		}
+		n.key = next.key
+		n.val = next.val
+		n = next
+	}
+
 	if n == n.p.l {
 		switch {
-		case n.l != nil && n.r != nil:
-			// something
 		case n.l != nil:
-			n.l.p = n.p
 			n.p.l = n.l
+			n.l.p = n.p
 		case n.r != nil:
-			n.r.p = n.p
 			n.p.l = n.r
+			n.r.p = n.p
 		default:
 			n.p.l = nil
 		}
 	} else {
 		switch {
-		case n.l != nil && n.r != nil:
-			// something
 		case n.l != nil:
-			n.l.p = n.p
 			n.p.r = n.l
+			n.l.p = n.p
 		case n.r != nil:
-			n.r.p = n.p
 			n.p.r = n.r
+			n.r.p = n.p
 		default:
 			n.p.r = nil
 		}
 	}
 
+	if n.black {
+		
+	}
 	return nil
 }
-*/
