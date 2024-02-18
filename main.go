@@ -123,14 +123,7 @@ func main() {
 	fmt.Println(tr.Next(9832))
 	fmt.Println(tr.Max())
 	_ = tr.Delete(9950)
-	for _, pair := range tr.InOrder() {
-		for _, element := range pair {
-			// Print each element of the pair
-			fmt.Print(element, " ")
-		}
-		fmt.Println()
-	}
-	fmt.Println(tr.Size())
-	fmt.Println(tr.Next(9831))
-	fmt.Println(tr.Max())
+	tr.Visualize()
+	tr.Delete(8369)
+	tr.Visualize()
 }

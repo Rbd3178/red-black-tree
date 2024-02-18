@@ -2,8 +2,10 @@ package tree
 
 import (
 	"errors"
-	// "fmt"
 	"golang.org/x/exp/constraints"
+	"strconv"
+	"strings"
+	"fmt"
 )
 
 type node[kT constraints.Ordered, vT any] struct {
@@ -399,4 +401,50 @@ func (t *Tree[kT, vT]) Delete(key kT) error {
 	}
 	t.size--
 	return nil
+}
+
+func keyToStr(key any) string {
+	switch k := key.(type) {
+	case float64:
+		s := strconv.FormatFloat(k, 'f', 2, 64)
+		return s
+	case int:
+		s := strconv.Itoa(k)
+		return s
+	case string:
+		return k
+	default:
+		return ""
+	}
+}
+
+func (t *Tree[kT, vT]) visualizeInternal(n *node[kT, vT], lBuf string, buf string, rBuf string, kLen int) {
+	if n == nil {
+		return
+	}
+	bufLine := rBuf + strings.Repeat(" ", kLen - 1) + "│"
+	bufSpace := rBuf + strings.Repeat(" ", kLen)
+	bufNode := rBuf + strings.Repeat(" ", kLen - 1) + "┌"
+	t.visualizeInternal(n.r, bufLine, bufNode, bufSpace,  kLen)
+
+	var s string
+	if n.isBlack() {
+		s = keyToStr(n.key) + "(B)"
+	} else {
+		s = keyToStr(n.key) + "(R)"
+	}
+	if len(s) < kLen {
+		s = strings.Repeat("─", kLen - len(s)) + s
+	}
+	fmt.Println(buf + s)
+
+	bufLine = lBuf + strings.Repeat(" ", kLen - 1) + "│"
+	bufSpace = lBuf + strings.Repeat(" ", kLen)
+	bufNode = lBuf + strings.Repeat(" ", kLen - 1) + "└"
+	t.visualizeInternal(n.l, bufSpace, bufNode, bufLine,  kLen)
+}
+
+func (t *Tree[kT, vT]) Visualize(){
+	kLen := len(keyToStr(t.max.key)) + 3
+	t.visualizeInternal(t.root, "", "", "", kLen)
 }
