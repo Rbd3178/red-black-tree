@@ -150,7 +150,7 @@ func (t *Tree[kT, vT]) Prev(key kT) (kT, vT, error) {
 	return curBest.key, curBest.val, nil
 }
 
-func (t *Tree[keyType, valType]) leftRotate(n *node[keyType, valType]) {
+func (t *Tree[kT, vT]) leftRotate(n *node[kT, vT]) {
 	child := n.r
 
 	n.r = child.l
@@ -172,7 +172,7 @@ func (t *Tree[keyType, valType]) leftRotate(n *node[keyType, valType]) {
 	n.p = child
 }
 
-func (t *Tree[keyType, valType]) rightRotate(n *node[keyType, valType]) {
+func (t *Tree[kT, vT]) rightRotate(n *node[kT, vT]) {
 	child := n.l
 
 	n.l = child.r
@@ -194,52 +194,11 @@ func (t *Tree[keyType, valType]) rightRotate(n *node[keyType, valType]) {
 	n.p = child
 }
 
-func (t *Tree[keyType, valType]) insertFix(n *node[keyType, valType]) {
-	for n != t.root && !n.p.black {
-		parent := n.p
-		grand := n.p.p
-		switch {
-		case parent == grand.l && n == parent.r && (grand.r == nil || grand.r.black):
-			t.leftRotate(parent)
-			t.rightRotate(grand)
-			grand.black = false
-			n.black = true
-			return
-		case parent == grand.r && n == parent.l && (grand.l == nil || grand.l.black):
-			t.rightRotate(parent)
-			t.leftRotate(grand)
-			grand.black = false
-			n.black = true
-			return
-		case parent == grand.l && n == parent.l && (grand.r == nil || grand.r.black):
-			t.rightRotate(grand)
-			grand.black = false
-			parent.black = true
-			return
-		case parent == grand.r && n == parent.r && (grand.l == nil || grand.l.black):
-			t.leftRotate(grand)
-			grand.black = false
-			parent.black = true
-			return
-		case parent == grand.l && !grand.r.black:
-			parent.black = true
-			grand.r.black = true
-			grand.black = false
-			n = grand
-		case parent == grand.r && !grand.l.black:
-			parent.black = true
-			grand.l.black = true
-			grand.black = false
-			n = grand
-		}
-	}
-
-	if n == t.root {
-		n.black = true
-	}
+func (n *node[kT, vT]) isBlack() bool {
+	return n == nil || n.black
 }
 
-func (t *Tree[keyType, valType]) Insert(key keyType, val valType) error {
+func (t *Tree[kT, vT]) Insert(key kT, val vT) error {
 	n := newNode(key, val)
 
 	if t.root == nil {
@@ -282,49 +241,162 @@ func (t *Tree[keyType, valType]) Insert(key keyType, val valType) error {
 	return nil
 }
 
-func (t *Tree[kT, vT]) Delete(key kT) error {
-	n := t.getNode(key)
+func (t *Tree[keyType, valType]) insertFix(n *node[keyType, valType]) {
+	for n != t.root && !n.p.black {
+		par := n.p
+		gran := n.p.p
+		switch {
+		case par == gran.l && n == par.r && gran.r.isBlack():
+			t.leftRotate(par)
+			t.rightRotate(gran)
+			gran.black = false
+			n.black = true
+			return
+		case par == gran.r && n == par.l && gran.l.isBlack():
+			t.rightRotate(par)
+			t.leftRotate(gran)
+			gran.black = false
+			n.black = true
+			return
+		case par == gran.l && n == par.l && gran.r.isBlack():
+			t.rightRotate(gran)
+			gran.black = false
+			par.black = true
+			return
+		case par == gran.r && n == par.r && gran.l.isBlack():
+			t.leftRotate(gran)
+			gran.black = false
+			par.black = true
+			return
+		case par == gran.l && !gran.r.isBlack():
+			par.black = true
+			gran.r.black = true
+			gran.black = false
+			n = gran
+		case par == gran.r && !gran.l.isBlack():
+			par.black = true
+			gran.l.black = true
+			gran.black = false
+			n = gran
+		}
+	}
 
-	if n == nil {
+	if n == t.root {
+		n.black = true
+	}
+}
+
+func (t *Tree[kT, vT]) Delete(key kT) error {
+	del := t.getNode(key)
+	if del == t.max {
+		t.max = t.max.p
+	}
+	if del == t.min {
+		t.min = t.min.p
+	}
+	if del == nil {
 		return errors.New("key doesn't exist")
 	}
 
-	if n.l != nil && n.r != nil {
-		next := n.r
+	if del.l != nil && del.r != nil {
+		next := del.r
 		for next.l != nil {
 			next = next.l
 		}
-		n.key = next.key
-		n.val = next.val
-		n = next
+		del.key = next.key
+		del.val = next.val
+		del = next
 	}
 
-	if n == n.p.l {
+	if del == t.root {
 		switch {
-		case n.l != nil:
-			n.p.l = n.l
-			n.l.p = n.p
-		case n.r != nil:
-			n.p.l = n.r
-			n.r.p = n.p
+		case del.l != nil:
+			x := del.l
+			x.p = nil
+			t.root = x
+			x.black = true
+		case del.r != nil:
+			x := del.r
+			x.p = nil
+			t.root = x
+			x.black = true
 		default:
-			n.p.l = nil
+			t.root = nil
 		}
+		return nil
+	}
+
+	var x *node[kT, vT]
+	par := del.p
+	if del.l != nil {
+		x = del.l
+		x.p = par
+	} else if del.r != nil {
+		x = del.r
+		x.p = par
+	}
+
+	if del == del.p.l {
+		par.l = x
 	} else {
-		switch {
-		case n.l != nil:
-			n.p.r = n.l
-			n.l.p = n.p
-		case n.r != nil:
-			n.p.r = n.r
-			n.r.p = n.p
-		default:
-			n.p.r = nil
-		}
+		par.r = x
 	}
 
-	if n.black {
-		
+	if del.isBlack() {
+		for x != t.root && x.isBlack() {
+			if x == par.l {
+				sib := par.r
+				if !sib.isBlack() {
+					sib.black = true
+					par.black = false
+					t.leftRotate(par)
+					sib = par.r
+				}
+				if sib.l.isBlack() && sib.r.isBlack() {
+					sib.black = false
+					x = par
+					par = x.p
+				} else {
+					if sib.r.isBlack() {
+						sib.l.black = true
+						sib.black = false
+						t.rightRotate(sib)
+					}
+					sib.black = par.black
+					par.black = true
+					sib.r.black = true
+					t.leftRotate(par)
+					x = t.root
+				}
+			} else {
+				sib := par.l
+				if !sib.isBlack() {
+					sib.black = true
+					par.black = false
+					t.rightRotate(par)
+					sib = par.l
+				}
+				if sib.l.isBlack() && sib.r.isBlack() {
+					sib.black = false
+					x = par
+					par = x.p
+				} else {
+					if sib.l.isBlack() {
+						sib.r.black = true
+						sib.black = false
+						t.leftRotate(sib)
+					}
+					sib.black = par.black
+					par.black = true
+					sib.l.black = true
+					t.rightRotate(par)
+					x = t.root
+				}
+			}
+		}
+		t.root.black = true
+		x.black = true
 	}
+	t.size--
 	return nil
 }

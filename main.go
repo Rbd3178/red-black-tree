@@ -112,7 +112,6 @@ func newFilledTree() *tree.Tree[int, string] {
 
 func main() {
 	tr := newFilledTree()
-	var tr2 tree.Tree[int, int]
 	for _, pair := range tr.InOrder() {
 		for _, element := range pair {
 			// Print each element of the pair
@@ -120,6 +119,18 @@ func main() {
 		}
 		fmt.Println()
 	}
-	fmt.Println(tr2.Size())
-	fmt.Println(tr.Next(9100))
+	fmt.Println(tr.Size())
+	fmt.Println(tr.Next(9832))
+	fmt.Println(tr.Max())
+	_ = tr.Delete(9950)
+	for _, pair := range tr.InOrder() {
+		for _, element := range pair {
+			// Print each element of the pair
+			fmt.Print(element, " ")
+		}
+		fmt.Println()
+	}
+	fmt.Println(tr.Size())
+	fmt.Println(tr.Next(9831))
+	fmt.Println(tr.Max())
 }
