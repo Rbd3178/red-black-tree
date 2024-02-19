@@ -540,6 +540,9 @@ func (t *Tree[kT, vT]) verifyInternal(n *node[kT, vT], blackCount int, blackDept
 // if there is a problem in the tree structure.
 // O(n)
 func (t *Tree[kT, vT]) Verify() error {
+	if t.root == nil {
+		return nil
+	}
 	if !t.root.isBlack() {
 		return errors.New("root is not black")
 	}

@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -137,13 +136,44 @@ func TestTreeInsert(t *testing.T) {
 		})
 	}
 }
-// 5602 - both children, deleting the 5616 - black, black brother
+
 func TestTreeDelete(t *testing.T) {
-	tr := newFilledTree()
-	tr.Visualize()
-	tr.Delete(6811)
-	tr.Visualize()
-	fmt.Println(tr.Verify())
+	trBig := newFilledTree()
+	trBig.Delete(7381)
+	trBig.Delete(7204)
+	var trSmall Tree[int, string]
+	trSmall.Insert(42, "test")
+	var tests = []struct {
+		name    string
+		tree    *Tree[int, string]
+		key     int
+		wantErr bool
+		wantVerifyErr bool
+	}{
+		{"deleting a red leaf node", newFilledTree(), 9950, false, false},
+		{"deleting a red internal node", newFilledTree(), 4557, false, false},
+		{"deleting a red internal node", newFilledTree(), 9676, false, false},
+		{"deleting a black leaf node with red parent", newFilledTree(), 7966, false, false},
+		{"deleting a black node, sibling is black", newFilledTree(), 8129, false, false},
+		{"deleting a black node, sibling is black with both black children", trBig, 7620, false, false},
+		{"deleting an internal black node, successor is black, sibling of successor is red", newFilledTree(), 6811, false, false},
+		{"deleting non-existing key", newFilledTree(), 2004, true, false},
+		{"deleting the last node", &trSmall, 42, false, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.tree.Delete(tt.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("tree.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			err = tt.tree.Verify()
+			if (err != nil) != tt.wantVerifyErr {
+				t.Errorf("tree.Verify() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
 }
 
 func TestTreeAt(t *testing.T) {
