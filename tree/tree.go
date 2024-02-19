@@ -485,6 +485,10 @@ func (t *Tree[kT, vT]) visualizeInternal(n *node[kT, vT], lBuf string, buf strin
 // Nodes are represented by their key and color.
 // O(n)
 func (t *Tree[kT, vT]) Visualize() {
+	if t.root == nil {
+		fmt.Println()
+		return
+	}
 	kLen := len(keyToStr(t.max.key)) + 3
 	t.visualizeInternal(t.root, "", "", "", kLen)
 }
