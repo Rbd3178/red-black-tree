@@ -150,7 +150,7 @@ loop:
 			var val string
 			val, err = myTree.At(key)
 			if err != nil {
-				fmt.Println("Error when getting vakue at key:", err)
+				fmt.Println("Error when getting value at key:", err)
 				fmt.Println()
 				continue loop
 			}
