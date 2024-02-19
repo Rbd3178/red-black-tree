@@ -125,5 +125,10 @@ func main() {
 	_ = tr.Delete(9950)
 	tr.Visualize()
 	tr.Delete(8369)
+	tr.Delete(3975)
+	tr.Delete(1073)
+	tr.Delete(188)
 	tr.Visualize()
+	err := tr.Verify()
+	fmt.Println(err)
 }

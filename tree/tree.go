@@ -2,10 +2,10 @@ package tree
 
 import (
 	"errors"
+	"fmt"
 	"golang.org/x/exp/constraints"
 	"strconv"
 	"strings"
-	"fmt"
 )
 
 type node[kT constraints.Ordered, vT any] struct {
@@ -21,6 +21,12 @@ func newNode[kT constraints.Ordered, vT any](key kT, val vT) *node[kT, vT] {
 	return &node[kT, vT]{key: key, val: val}
 }
 
+// Tree represents an associative container implemented as a red-black tree.
+// Red-black trees are self-balancing binary search trees that provide efficient
+// operations for insertion, deletion, and search, 
+// which all have a complexity of O(log(n)), where n is the amount of key-value pairs stored.
+// Additionally, the tree has the ability to return its elements in order.
+// Use the provided methods to interact with the tree.
 type Tree[kT constraints.Ordered, vT any] struct {
 	root *node[kT, vT]
 	size int
@@ -40,6 +46,9 @@ func (t *Tree[kT, vT]) getNode(key kT) *node[kT, vT] {
 	return n
 }
 
+// Returns a value stored by the provided key.
+// Returns an error if the provided key is not in the structure.
+// O(log(n))
 func (t *Tree[kT, vT]) At(key kT) (vT, error) {
 	n := t.getNode(key)
 	if n == nil {
@@ -49,6 +58,9 @@ func (t *Tree[kT, vT]) At(key kT) (vT, error) {
 	return n.val, nil
 }
 
+// Changes the value stored by the provided key to the one provided.
+// Returns an error if the provided key is not in the structure.
+// O(log(n))
 func (t *Tree[kT, vT]) Assign(key kT, val vT) error {
 	n := t.getNode(key)
 	if n == nil {
@@ -58,6 +70,9 @@ func (t *Tree[kT, vT]) Assign(key kT, val vT) error {
 	return nil
 }
 
+// Returns a slice of all key and value pairs,
+// sorted by key in ascending order.
+// O(n)
 func (t *Tree[kT, vT]) InOrder() [][]any {
 	var out [][]any
 	var s []*node[kT, vT]
@@ -76,10 +91,15 @@ func (t *Tree[kT, vT]) InOrder() [][]any {
 	return out
 }
 
+// Returns the amount of nodes in the tree.
+// O(1)
 func (t *Tree[kT, vT]) Size() int {
 	return t.size
 }
 
+// Returns the key and value pair with the biggest key.
+// Returns an error if the tree is empty.
+// O(1)
 func (t *Tree[kT, vT]) Max() (kT, vT, error) {
 	if t.root == nil {
 		var k kT
@@ -89,6 +109,9 @@ func (t *Tree[kT, vT]) Max() (kT, vT, error) {
 	return t.max.key, t.max.val, nil
 }
 
+// Returns the key and value pair with the smallest key.
+// Returns an error if the tree is empty.
+// O(1)
 func (t *Tree[kT, vT]) Min() (kT, vT, error) {
 	if t.root == nil {
 		var k kT
@@ -98,6 +121,10 @@ func (t *Tree[kT, vT]) Min() (kT, vT, error) {
 	return t.min.key, t.min.val, nil
 }
 
+// Returns the first key and value pair, 
+// where the key is larger than the one provided. 
+// Returns an error if there is no larger key in the tree.
+// O(log(n))
 func (t *Tree[kT, vT]) Next(key kT) (kT, vT, error) {
 	n := t.root
 	var curBest *node[kT, vT]
@@ -125,6 +152,10 @@ func (t *Tree[kT, vT]) Next(key kT) (kT, vT, error) {
 	return curBest.key, curBest.val, nil
 }
 
+// Returns the first key and value pair, 
+// where the key is smaller than the one provided. 
+// Returns an error if there is no smaller key in the tree.
+// O(log(n))
 func (t *Tree[kT, vT]) Prev(key kT) (kT, vT, error) {
 	n := t.root
 	var curBest *node[kT, vT]
@@ -200,6 +231,9 @@ func (n *node[kT, vT]) isBlack() bool {
 	return n == nil || n.black
 }
 
+// Adds a node with provided key and value to the tree.
+// Returns an error if the key is already in the structure.
+// O(log(n))
 func (t *Tree[kT, vT]) Insert(key kT, val vT) error {
 	n := newNode(key, val)
 
@@ -288,6 +322,9 @@ func (t *Tree[keyType, valType]) insertFix(n *node[keyType, valType]) {
 	}
 }
 
+// Deletes the node with the provided key from the tree.
+// Returns an error if the key is not found in the structure.
+// O(log(n))
 func (t *Tree[kT, vT]) Delete(key kT) error {
 	del := t.getNode(key)
 	if del == t.max {
@@ -422,10 +459,10 @@ func (t *Tree[kT, vT]) visualizeInternal(n *node[kT, vT], lBuf string, buf strin
 	if n == nil {
 		return
 	}
-	bufLine := rBuf + strings.Repeat(" ", kLen - 1) + "│"
+	bufLine := rBuf + strings.Repeat(" ", kLen-1) + "│"
 	bufSpace := rBuf + strings.Repeat(" ", kLen)
-	bufNode := rBuf + strings.Repeat(" ", kLen - 1) + "┌"
-	t.visualizeInternal(n.r, bufLine, bufNode, bufSpace,  kLen)
+	bufNode := rBuf + strings.Repeat(" ", kLen-1) + "┌"
+	t.visualizeInternal(n.r, bufLine, bufNode, bufSpace, kLen)
 
 	var s string
 	if n.isBlack() {
@@ -434,17 +471,73 @@ func (t *Tree[kT, vT]) visualizeInternal(n *node[kT, vT], lBuf string, buf strin
 		s = keyToStr(n.key) + "(R)"
 	}
 	if len(s) < kLen {
-		s = strings.Repeat("─", kLen - len(s)) + s
+		s = strings.Repeat("─", kLen-len(s)) + s
 	}
 	fmt.Println(buf + s)
 
-	bufLine = lBuf + strings.Repeat(" ", kLen - 1) + "│"
+	bufLine = lBuf + strings.Repeat(" ", kLen-1) + "│"
 	bufSpace = lBuf + strings.Repeat(" ", kLen)
-	bufNode = lBuf + strings.Repeat(" ", kLen - 1) + "└"
-	t.visualizeInternal(n.l, bufSpace, bufNode, bufLine,  kLen)
+	bufNode = lBuf + strings.Repeat(" ", kLen-1) + "└"
+	t.visualizeInternal(n.l, bufSpace, bufNode, bufLine, kLen)
 }
 
-func (t *Tree[kT, vT]) Visualize(){
+// Prints out a visualization of the tree.
+// Nodes are represented by their key and color.
+// O(n)
+func (t *Tree[kT, vT]) Visualize() {
 	kLen := len(keyToStr(t.max.key)) + 3
 	t.visualizeInternal(t.root, "", "", "", kLen)
+}
+
+// Returns the amount of black nodes
+// on the path from the root to the leaves.
+// O(log(n))
+func (t *Tree[kT, vT]) BlackDepth() int {
+	n := t.root
+	blackDepth := 0
+	for n != nil {
+		if n.isBlack() {
+			blackDepth++
+		}
+		n = n.r
+	}
+	return blackDepth
+}
+
+func (t *Tree[kT, vT]) verifyInternal(n *node[kT, vT], blackCount int, blackDepth int) error {
+	if !n.isBlack() && !n.p.isBlack() {
+		return errors.New("red node has a red parent")
+	}
+	if n.isBlack() {
+		blackCount++
+	}
+	if n.l == nil && n.r == nil && blackCount != blackDepth {
+		return errors.New("black depth is inconsistent")
+	}
+	if n.l != nil {
+		err := t.verifyInternal(n.l, blackCount, blackDepth)
+		if err != nil {
+			return err
+		}
+	}
+	if n.r != nil {
+		err := t.verifyInternal(n.r, blackCount, blackDepth)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Checks if all the properties of the red-black tree are met.
+// Traverses the tree in order and returns an error
+// if there is a problem in the tree structure.
+// O(n)
+func (t *Tree[kT, vT]) Verify() error {
+	if !t.root.isBlack() {
+		return errors.New("root is not black")
+	}
+	blackDepth := t.BlackDepth()
+	err := t.verifyInternal(t.root, 0, blackDepth)
+	return err
 }
