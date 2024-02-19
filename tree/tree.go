@@ -401,6 +401,7 @@ func (t *Tree[kT, vT]) Delete(key kT) error {
 						sib.black = false
 						t.rightRotate(sib)
 					}
+					sib = par.r
 					sib.black = par.black
 					par.black = true
 					sib.r.black = true
@@ -425,6 +426,7 @@ func (t *Tree[kT, vT]) Delete(key kT) error {
 						sib.black = false
 						t.leftRotate(sib)
 					}
+					sib = par.l
 					sib.black = par.black
 					par.black = true
 					sib.l.black = true

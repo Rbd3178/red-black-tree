@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -135,6 +136,14 @@ func TestTreeInsert(t *testing.T) {
 			}
 		})
 	}
+}
+// 5602 - both children, deleting the 5616 - black, black brother
+func TestTreeDelete(t *testing.T) {
+	tr := newFilledTree()
+	tr.Visualize()
+	tr.Delete(6811)
+	tr.Visualize()
+	fmt.Println(tr.Verify())
 }
 
 func TestTreeAt(t *testing.T) {
