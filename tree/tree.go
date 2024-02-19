@@ -23,7 +23,7 @@ func newNode[kT constraints.Ordered, vT any](key kT, val vT) *node[kT, vT] {
 
 // Tree represents an associative container implemented as a red-black tree.
 // Red-black trees are self-balancing binary search trees that provide efficient
-// operations for insertion, deletion, and search, 
+// operations for insertion, deletion, and search,
 // which all have a complexity of O(log(n)), where n is the amount of key-value pairs stored.
 // Additionally, the tree has the ability to return its elements in order.
 // Use the provided methods to interact with the tree.
@@ -121,8 +121,8 @@ func (t *Tree[kT, vT]) Min() (kT, vT, error) {
 	return t.min.key, t.min.val, nil
 }
 
-// Returns the first key and value pair, 
-// where the key is larger than the one provided. 
+// Returns the first key and value pair,
+// where the key is larger than the one provided.
 // Returns an error if there is no larger key in the tree.
 // O(log(n))
 func (t *Tree[kT, vT]) Next(key kT) (kT, vT, error) {
@@ -152,8 +152,8 @@ func (t *Tree[kT, vT]) Next(key kT) (kT, vT, error) {
 	return curBest.key, curBest.val, nil
 }
 
-// Returns the first key and value pair, 
-// where the key is smaller than the one provided. 
+// Returns the first key and value pair,
+// where the key is smaller than the one provided.
 // Returns an error if there is no smaller key in the tree.
 // O(log(n))
 func (t *Tree[kT, vT]) Prev(key kT) (kT, vT, error) {
