@@ -150,7 +150,7 @@ loop:
 			var val string
 			val, err = myTree.At(key)
 			if err != nil {
-				fmt.Println("Error when getting previous element:", err)
+				fmt.Println("Error when getting vakue at key:", err)
 				fmt.Println()
 				continue loop
 			}
@@ -168,7 +168,7 @@ loop:
 			}
 			err = myTree.Assign(key, val)
 			if err != nil {
-				fmt.Println("Error when inserting:", err)
+				fmt.Println("Error when assigning:", err)
 				fmt.Println()
 				continue loop
 			}
