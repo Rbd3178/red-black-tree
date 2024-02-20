@@ -7,7 +7,7 @@ import (
 // newFilledTree returns a pointer to a Tree,
 // filled with 99 string values with int keys.
 // Max key: 9950. Min key: 188.
-func newFilledTree() *Tree[int, string] {
+func newFilledTree() Tree[int, string] {
 	var tr Tree[int, string]
 	tr.Insert(8215, "8215")
 	tr.Insert(9676, "9676")
@@ -109,7 +109,7 @@ func newFilledTree() *Tree[int, string] {
 	tr.Insert(8823, "8823")
 	tr.Insert(5290, "5290")
 	tr.Insert(4311, "4311")
-	return &tr
+	return tr
 }
 
 func TestTreeInsert(t *testing.T) {
@@ -133,6 +133,11 @@ func TestTreeInsert(t *testing.T) {
 				t.Errorf("tree.Insert() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			err = tr.Verify()
+			if err != nil {
+				t.Errorf("tree.Verify() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 		})
 	}
 }
@@ -145,20 +150,19 @@ func TestTreeDelete(t *testing.T) {
 	trSmall.Insert(42, "test")
 	var tests = []struct {
 		name    string
-		tree    *Tree[int, string]
+		tree    Tree[int, string]
 		key     int
 		wantErr bool
-		wantVerifyErr bool
 	}{
-		{"deleting a red leaf node", newFilledTree(), 9950, false, false},
-		{"deleting a red internal node", newFilledTree(), 4557, false, false},
-		{"deleting a red internal node", newFilledTree(), 9676, false, false},
-		{"deleting a black leaf node with red parent", newFilledTree(), 7966, false, false},
-		{"deleting a black node, sibling is black", newFilledTree(), 8129, false, false},
-		{"deleting a black node, sibling is black with both black children", trBig, 7620, false, false},
-		{"deleting an internal black node, successor is black, sibling of successor is red", newFilledTree(), 6811, false, false},
-		{"deleting non-existing key", newFilledTree(), 2004, true, false},
-		{"deleting the last node", &trSmall, 42, false, false},
+		{"deleting a red leaf node", newFilledTree(), 9950, false},
+		{"deleting a red internal node", newFilledTree(), 4557, false},
+		{"deleting a red internal node", newFilledTree(), 9676, false},
+		{"deleting a black leaf node with red parent", newFilledTree(), 7966, false},
+		{"deleting a black node, sibling is black", newFilledTree(), 8129, false},
+		{"deleting a black node, sibling is black with both black children", trBig, 7620, false},
+		{"deleting an internal black node, successor is black, sibling of successor is red", newFilledTree(), 6811, false},
+		{"deleting non-existing key", newFilledTree(), 2004, true},
+		{"deleting the last node", trSmall, 42, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -168,7 +172,7 @@ func TestTreeDelete(t *testing.T) {
 				return
 			}
 			err = tt.tree.Verify()
-			if (err != nil) != tt.wantVerifyErr {
+			if err != nil {
 				t.Errorf("tree.Verify() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -181,7 +185,7 @@ func TestTreeAt(t *testing.T) {
 	var trEmpty Tree[int, string]
 	var tests = []struct {
 		name    string
-		tree    *Tree[int, string]
+		tree    Tree[int, string]
 		key     int
 		want    string
 		wantErr bool
@@ -194,7 +198,7 @@ func TestTreeAt(t *testing.T) {
 		{"9999 (larger than max) should not be found", trFull, 9999, "", true},
 		{"100 (smaller than min) should not be found", trFull, 100, "", true},
 		{"2800 (haven't been inserted) should not be found", trFull, 2800, "", true},
-		{"nothing should be found in empty tree", &trEmpty, 42, "", true},
+		{"nothing should be found in empty tree", trEmpty, 42, "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -215,7 +219,7 @@ func TestTreeAssign(t *testing.T) {
 	var trEmpty Tree[int, string]
 	var tests = []struct {
 		name    string
-		tree    *Tree[int, string]
+		tree    Tree[int, string]
 		key     int
 		val     string
 		want    string
@@ -223,7 +227,7 @@ func TestTreeAssign(t *testing.T) {
 	}{
 		{"assign \"test\" to key 4606", trFull, 4606, "test", "test", false},
 		{"try assigning to non-existing key", trFull, 9999, "test", "test", true},
-		{"try assigning in an empty tree", &trEmpty, 10, "test", "test", true},
+		{"try assigning in an empty tree", trEmpty, 10, "test", "test", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -247,12 +251,12 @@ func TestTreeSize(t *testing.T) {
 	var trEmpty Tree[int, string]
 	var tests = []struct {
 		name    string
-		tree    *Tree[int, string]
+		tree    Tree[int, string]
 		want    int
 		wantErr bool
 	}{
 		{"Size of a filled tree should be 99", trFull, 99, false},
-		{"Size of an empty tree should be 0", &trEmpty, 0, false},
+		{"Size of an empty tree should be 0", trEmpty, 0, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -269,12 +273,12 @@ func TestTreeMax(t *testing.T) {
 	var trEmpty Tree[int, string]
 	var tests = []struct {
 		name    string
-		tree    *Tree[int, string]
+		tree    Tree[int, string]
 		want    int
 		wantErr bool
 	}{
 		{"Max key should be 9950", trFull, 9950, false},
-		{"Error in case of empty tree", &trEmpty, 0, true},
+		{"Error in case of empty tree", trEmpty, 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -295,12 +299,12 @@ func TestTreeMin(t *testing.T) {
 	var trEmpty Tree[int, string]
 	var tests = []struct {
 		name    string
-		tree    *Tree[int, string]
+		tree    Tree[int, string]
 		want    int
 		wantErr bool
 	}{
 		{"Min key should be 188", trFull, 188, false},
-		{"Error in case of empty tree", &trEmpty, 0, true},
+		{"Error in case of empty tree", trEmpty, 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -321,7 +325,7 @@ func TestTreeNext(t *testing.T) {
 	var trEmpty Tree[int, string]
 	var tests = []struct {
 		name    string
-		tree    *Tree[int, string]
+		tree    Tree[int, string]
 		key     int
 		want    int
 		wantErr bool
@@ -330,7 +334,7 @@ func TestTreeNext(t *testing.T) {
 		{"First key lagrer than 9600 should be 9605", trFull, 9600, 9605, false},
 		{"Should be no keys larger than existing 9950", trFull, 9950, 0, true},
 		{"Should be no keys larger than 10000", trFull, 10000, 0, true},
-		{"Should be no larger keys than 42 in empty tree", &trEmpty, 42, 0, true},
+		{"Should be no larger keys than 42 in empty tree", trEmpty, 42, 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -351,7 +355,7 @@ func TestTreePrev(t *testing.T) {
 	var trEmpty Tree[int, string]
 	var tests = []struct {
 		name    string
-		tree    *Tree[int, string]
+		tree    Tree[int, string]
 		key     int
 		want    int
 		wantErr bool
@@ -360,7 +364,7 @@ func TestTreePrev(t *testing.T) {
 		{"First key smaller than 7200 should be 7130", trFull, 7200, 7130, false},
 		{"Should be no keys smaller than existing 188", trFull, 188, 0, true},
 		{"Should be no keys smaller than 100", trFull, 100, 0, true},
-		{"Should be no smaller keys than 42 in empty tree", &trEmpty, 42, 0, true},
+		{"Should be no smaller keys than 42 in empty tree", trEmpty, 42, 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
