@@ -445,7 +445,7 @@ func (t *Tree[kT, vT]) Delete(key kT) error {
 func keyToStr(key any) string {
 	switch k := key.(type) {
 	case float64:
-		s := strconv.FormatFloat(k, 'f', 2, 64)
+		s := strconv.FormatFloat(k, 'f', 3, 64)
 		return s
 	case int:
 		s := strconv.Itoa(k)
@@ -491,7 +491,11 @@ func (t *Tree[kT, vT]) Visualize() {
 		fmt.Println()
 		return
 	}
-	kLen := len(keyToStr(t.max.key)) + 3
+	kLen := 0
+	for _, pair := range t.InOrder() {
+		kLen = max(kLen, len(keyToStr(pair[0])))
+	}
+	kLen += 3
 	t.visualizeInternal(t.root, "", "", "", kLen)
 }
 
