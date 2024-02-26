@@ -79,8 +79,7 @@ func (t *Tree[kT, vT]) InOrder() [][]any {
 	n := t.root
 	for n != nil || len(s) != 0 {
 		if n == nil && len(s) != 0 {
-			var pair = []any{s[len(s)-1].key, s[len(s)-1].val}
-			out = append(out, pair)
+			out = append(out, []any{s[len(s)-1].key, s[len(s)-1].val})
 			n = s[len(s)-1].r
 			s = s[:len(s)-1]
 		} else {
@@ -553,4 +552,26 @@ func (t *Tree[kT, vT]) Verify() error {
 	blackDepth := t.BlackDepth()
 	err := t.verifyInternal(t.root, 0, blackDepth)
 	return err
+}
+
+func (t *Tree[kT, vT]) rangeInternal(n *node[kT, vT], min kT, max kT, out [][]any) [][]any {
+	if n.l != nil && n.key >= min {
+		out = t.rangeInternal(n.l, min, max, out)
+	}
+	if n.key >= min && n.key <= max {
+		out = append(out, []any{n.key, n.val})
+	}
+	if n.r != nil && n.key <= max {
+		out = t.rangeInternal(n.r, min, max, out)
+	}
+	return out
+}
+
+// Returns a slice of elements not less than min
+// and not greater than max.
+// O(k), where k is number of such elements.
+func (t *Tree[kT, vT]) Range(min kT, max kT) [][]any {
+	var out [][]any
+	out = t.rangeInternal(t.root, min, max, out)
+	return out
 }

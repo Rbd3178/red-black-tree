@@ -175,6 +175,22 @@ loop:
 			fmt.Println("Success!")
 			fmt.Println()
 
+		case "range":
+			fmt.Print("Enter lower and upper bound: ")
+			var min, max int
+			_, err = fmt.Scanln(&min, &max)
+			if err != nil {
+				fmt.Println("Error reading input:", err)
+				continue loop
+			}
+			for _, pair := range myTree.Range(min, max) {
+				for _, element := range pair {
+					fmt.Print(element, " ")
+				}
+				fmt.Println()
+			}
+			fmt.Println()
+
 		case "exit":
 			break loop
 
