@@ -572,6 +572,9 @@ func (t *Tree[kT, vT]) rangeInternal(n *node[kT, vT], min kT, max kT, out [][]an
 // O(k), where k is number of such elements.
 func (t *Tree[kT, vT]) Range(min kT, max kT) [][]any {
 	var out [][]any
+	if t.root == nil {
+		return out
+	}
 	out = t.rangeInternal(t.root, min, max, out)
 	return out
 }
