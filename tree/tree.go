@@ -30,8 +30,6 @@ func newNode[kT constraints.Ordered, vT any](key kT, val vT) *node[kT, vT] {
 type Tree[kT constraints.Ordered, vT any] struct {
 	root *node[kT, vT]
 	size int
-	max  *node[kT, vT]
-	min  *node[kT, vT]
 }
 
 func (t *Tree[kT, vT]) getNode(key kT) *node[kT, vT] {
@@ -98,26 +96,38 @@ func (t *Tree[kT, vT]) Size() int {
 
 // Returns the key and value pair with the biggest key.
 // Returns an error if the tree is empty.
-// O(1)
+// O(log(n))
 func (t *Tree[kT, vT]) Max() (kT, vT, error) {
 	if t.root == nil {
 		var k kT
 		var v vT
 		return k, v, errors.New("tree is empty")
 	}
-	return t.max.key, t.max.val, nil
+
+	max := t.root
+	for max.r != nil {
+		max = max.r
+	}
+
+	return max.key, max.val, nil
 }
 
 // Returns the key and value pair with the smallest key.
 // Returns an error if the tree is empty.
-// O(1)
+// O(log(n))
 func (t *Tree[kT, vT]) Min() (kT, vT, error) {
 	if t.root == nil {
 		var k kT
 		var v vT
 		return k, v, errors.New("tree is empty")
 	}
-	return t.min.key, t.min.val, nil
+
+	min := t.root
+	for min.l != nil {
+		min = min.l
+	}
+
+	return min.key, min.val, nil
 }
 
 // Returns the first key and value pair,
@@ -240,8 +250,6 @@ func (t *Tree[kT, vT]) Insert(key kT, val vT) error {
 		n.black = true
 		t.root = n
 		t.size++
-		t.max = n
-		t.min = n
 		return nil
 	}
 
@@ -267,12 +275,7 @@ func (t *Tree[kT, vT]) Insert(key kT, val vT) error {
 	t.insertFix(n)
 
 	t.size++
-	if key > t.max.key {
-		t.max = n
-	}
-	if key < t.min.key {
-		t.min = n
-	}
+
 	return nil
 }
 
@@ -326,12 +329,7 @@ func (t *Tree[keyType, valType]) insertFix(n *node[keyType, valType]) {
 // O(log(n))
 func (t *Tree[kT, vT]) Delete(key kT) error {
 	del := t.getNode(key)
-	if del == t.max {
-		t.max = t.max.p
-	}
-	if del == t.min {
-		t.min = t.min.p
-	}
+	
 	if del == nil {
 		return errors.New("key doesn't exist")
 	}

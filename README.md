@@ -32,9 +32,9 @@ func main() {
 
 - `Tree.Prev(key)` Returns the first key-value pair with the key smaller than the passed one, even if no values are stored by the passed key, in O(log(n)).
 
-- `Tree.Max()` Returns the key-value pair with the biggest key in O(1). Returns an error if the tree is empty.
+- `Tree.Max()` Returns the key-value pair with the biggest key in O(log(n)). Returns an error if the tree is empty.
 
-- `Tree.Min()` Returns the key-value pair with the smallest key in O(1). Returns an error if the tree is empty.
+- `Tree.Min()` Returns the key-value pair with the smallest key in O(log(n)). Returns an error if the tree is empty.
 
 - `Tree.BlackDepth()` Returns the amount of black nodes on the path from the root to leaf nodes in O(log(n)).
 
